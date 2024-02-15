@@ -38,7 +38,7 @@ def circlesCreate(radius,n):
 
 
 def circlesAngles(ratio):
-    return np.linspace(2*np.pi, 0, ratio+1, endpoint=False)
+    return np.linspace(0, 2*np.pi, ratio+1, endpoint=False)
 
 
 #
