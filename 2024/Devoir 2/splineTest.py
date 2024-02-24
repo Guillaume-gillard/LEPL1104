@@ -20,11 +20,13 @@ import time
 #
 #
 
-def spline(x,h,U):
+def spline(x, h, U):
   start = time.time()
+
   # Creating abscisses
   n = size(U)
-  X = arange(0,n+1)*h
+  X = arange(0, n+1)*h
+
   # Solving linear system
   A = (h**2/6)*(identity(n)*4 + eye(n, k=1) + eye(n, k=-1))   
   A[0][-1] = h**2/6
@@ -33,12 +35,13 @@ def spline(x,h,U):
   for i in range(-1, n-1):
       b[i] = U[i-1] - 2*U[i] + U[i+1]
   d2U = solve(A, b)
+
   # Evaluating cubics
-  i = zeros(len(x),dtype=int)
-  for j in range(1,n):
+  i = zeros(len(x), dtype=int)
+  for j in range(1, n):
       i[X[j]<=x] = j
 
-  U = append(U,U[0])
+  U = append(U, U[0])
   d2U = append(d2U, d2U[0])
 
   end = time.time()
@@ -48,7 +51,6 @@ def spline(x,h,U):
           (d2U[i+1]*(x-X[i])**3)/(6*h) + 
           (U[i]/h - d2U[i]*h/6)*(X[i+1]-x) + 
           (U[i+1]/h - d2U[i+1]*h/6)*(x-X[i]))
-         
 
 #
 # FONCTIONS A MODIFIER [end]
