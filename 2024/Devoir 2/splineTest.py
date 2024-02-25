@@ -31,16 +31,17 @@ def spline(x, h, U):
   A = (h**2/6)*(identity(n)*4 + eye(n, k=1) + eye(n, k=-1))   
   A[0][-1] = h**2/6
   A[-1][0] = h**2/6
-  b = zeros(n)
-  for i in range(-1, n-1):
-      b[i] = U[i-1] - 2*U[i] + U[i+1]
+  b = zeros_like(U)
+  b[1:-1] = U[:-2] - 2*U[1:-1] + U[2:]
+  b[0] = U[-1] - 2*U[0] + U[1]  
+  b[-1] = U[-2] - 2*U[-1] + U[0]
   d2U = solve(A, b)
 
   # Evaluating cubics
   i = zeros(len(x), dtype=int)
   for j in range(1, n):
       i[X[j]<=x] = j
-
+    
   U = append(U, U[0])
   d2U = append(d2U, d2U[0])
 
