@@ -22,13 +22,19 @@ def b(t,T,i,p):
     u  = 0.0 if T[i+p ]  == T[i]   else (t-T[i])/(T[i+p]- T[i]) * b(t,T,i,p-1)
     u += 0.0 if T[i+p+1] == T[i+1] else (T[i+p+1]-t)/(T[i+p+1]-T[i+1]) * b(t,T,i+1,p-1)
     return u
-
     
-def bspline(X,Y,t): 
-  x = t.copy()
-  y = t.copy()
-  return x,y
-
+def bspline(X,Y,t):
+  Xi = append(X, X[:3])
+  Yi = append(Y, Y[:3])
+  m = len(Xi)
+  p = 3 
+  T = arange(-3, m+1)
+  B = zeros((m, len(t)))
+  for i in range(m):
+    B[i,:] = b(t,T,i,p)
+  x = Xi @ B
+  y = Yi @ B
+  return (x, y)
    
 #
 # FONCTIONS A MODIFIER [end]
