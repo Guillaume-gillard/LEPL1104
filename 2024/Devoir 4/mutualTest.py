@@ -40,20 +40,31 @@ import matplotlib.pyplot as plt
 #  du même type que X,Z.   Le résultat est exprimé en [Tesla] ou [kg /s2 A]
 #
 
-def inductanceMegneticField(X,Z,Rsource,Zsource,Isource,data):
+def inductanceMegneticField(X, Z, Rsource, Zsource, Isource, data):
  
-# 
-# A COMPLETER / MODIFIER
-#
-
-  Bx  = ones(shape(X))
-  Bz  = ones(shape(X))
+  mu0     = data.mu0
+  Xcircle = data.Xcircle
+  Ycircle = data.Ycircle    
+  n = len(Rsource)
+  dtheta = (2*pi) / len(Xcircle)
   
-# 
-# A COMPLETER / MODIFIER
-# 
+  Bx  = zeros(shape(X))
+  Bz  = zeros(shape(X))
+  for k in range(n):     
+    for l in range(len(Xcircle)):
+      dx =   - Rsource[k]*Ycircle[l]*dtheta
+      dy =     Rsource[k]*Xcircle[l]*dtheta
+      rx = X - Rsource[k]*Xcircle[l]
+      ry =   - Rsource[k]*Ycircle[l]      
+      rz = Z - Zsource[k]
+      r  = (rx*rx+ry*ry+rz*rz)**(3/2)
+      Bx += Isource[k] * (dy*rz) / r
+      Bz += Isource[k] * (dx*ry - dy*rx) / r  
+  coeff = (mu0)/(4*pi)         
+  Bx *= coeff
+  Bz *= coeff
  
-  return [Bx,Bz]
+  return [Bx, Bz]
 
 # ------------------------------------------------------------------------------------
 #
@@ -73,25 +84,43 @@ def inductanceMegneticField(X,Z,Rsource,Zsource,Isource,data):
 #  X0 ou Z0 et les tableaux auront une taille m*nGL ou n*nGL respectivement
 #
 
-def inductanceGaussLegendre(X0,Xf,Z0,Zf,n,m,nGaussLegendre):
- 
-# 
-# A COMPLETER / MODIFIER
-#
+def inductanceGaussLegendre(X0, Xf, Z0, Zf, n, m, nGaussLegendre):
  
   xi,we = roots_legendre(nGaussLegendre)  
   
-  size = max(n*nGaussLegendre,1)*max(m*nGaussLegendre,1)
-  X = Xf * ones(size)
-  Z = Zf * ones(size)
-  W = ones(size)
+  X = X0 * ones(nGaussLegendre)
+  Z = Z0 * ones(nGaussLegendre)
+  W = ones(nGaussLegendre)/nGaussLegendre
   
- 
-# 
-# A COMPLETER / MODIFIER
-#
-  
-  return [X,Z,W]
+  if n > 0:
+    X = zeros(nGaussLegendre*n)
+    Z = Z0 * ones(nGaussLegendre*n)
+    W = zeros(nGaussLegendre*n)  
+    Xnode = linspace(X0, Xf, n+1); h = (Xf - X0)/n    
+    for i in range(n):
+      Xlocal = Xnode[i] + h/2 + xi * h/2
+      map = range(i*nGaussLegendre, (i+1)*nGaussLegendre)
+      X[map] = Xlocal   
+      W[map] = Xlocal*we*pi*h
+   
+  if m > 0: 
+    V = W
+    Z = zeros(nGaussLegendre*m)
+    W = zeros(nGaussLegendre*m)   
+    Znode = linspace(Z0, Zf, m+1); h = (Zf - Z0)/m   
+    for i in range(m):
+      Zlocal = Znode[i] + h/2 + xi * h/2
+      map = range(i*nGaussLegendre,(i+1)*nGaussLegendre)
+      Z[map] = Zlocal   
+      W[map] = we/(2*m)  
+    if n == 0:
+      X = repeat(X, m)
+    else:  
+      Z = tile(Z, nGaussLegendre*max(n,1))
+      X = repeat(X, nGaussLegendre*m)
+      W = repeat(V, nGaussLegendre*m) * tile(W, nGaussLegendre*max(n,1))    
+
+  return [X, Z, W]
     
 # ------------------------------------------------------------------------------------
 #
@@ -107,27 +136,20 @@ def inductanceGaussLegendre(X0,Xf,Z0,Zf,n,m,nGaussLegendre):
 #  La fonction renvoie une liste [X,Z,W] contenant les abscisses et les poids.
 #  Ce seront des tableaux unidimensionnels de taille (2nX+1)*(2nZ+1)
 #  Si nX ou nZ sont nuls, on fera une intégration unidimensionnelle en utilisant 
-#  X0 ou Z0 et les tableaux auront une taille (2nZ+1), (2nX/1) ou 1 respectivement
+#  X0 ou Z0 et les tableaux auront une taille (2nZ+1), (2nX+1) ou 1 respectivement
 #
 
-def inductanceSimpson(X0,Xf,Z0,Zf,n,m):
- 
-# 
-# A COMPLETER / MODIFIER
-#
- 
-  
-  size = (n+1)*(m+1)
-  X = Xf * ones(size)
-  Z = Zf * ones(size)
-  W = ones(size)
-  
- 
-# 
-# A COMPLETER / MODIFIER
-#
-  
-  return [X,Z,W]
+def inductanceSimpson(X0, Xf, Z0, Zf, nX, nZ):
+  hX = (Xf - X0) / (2*nX)
+  hZ = (Zf - Z0) / (2*nZ)
+  X = np.linspace(X0, Xf, 2*nX+1)
+  Z = np.linspace(Z0, Zf, 2*nZ+1)
+  W = np.ones((2*nX+1, 2*nZ+1))
+
+  W[1::2, :] *= 4
+  W[2:-1:2, :] *= 2 
+
+  return [X, Z, W]
 
 #
 # FONCTIONS A MODIFIER [end]
