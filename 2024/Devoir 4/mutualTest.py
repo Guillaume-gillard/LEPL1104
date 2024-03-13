@@ -96,21 +96,23 @@ def inductanceGaussLegendre(X0, Xf, Z0, Zf, n, m, nGaussLegendre):
     X = zeros(nGaussLegendre*n)
     Z = Z0 * ones(nGaussLegendre*n)
     W = zeros(nGaussLegendre*n)  
-    Xnode = linspace(X0, Xf, n+1); h = (Xf - X0)/n    
+    Xnode = linspace(X0, Xf, n+1)
+    h = (Xf - X0)/n    
     for i in range(n):
       Xlocal = Xnode[i] + h/2 + xi * h/2
       map = range(i*nGaussLegendre, (i+1)*nGaussLegendre)
       X[map] = Xlocal   
       W[map] = Xlocal*we*pi*h
-   
+
   if m > 0: 
     V = W
     Z = zeros(nGaussLegendre*m)
     W = zeros(nGaussLegendre*m)   
-    Znode = linspace(Z0, Zf, m+1); h = (Zf - Z0)/m   
+    Znode = linspace(Z0, Zf, m+1)
+    h = (Zf - Z0)/m   
     for i in range(m):
       Zlocal = Znode[i] + h/2 + xi * h/2
-      map = range(i*nGaussLegendre,(i+1)*nGaussLegendre)
+      map = range(i*nGaussLegendre, (i+1)*nGaussLegendre)
       Z[map] = Zlocal   
       W[map] = we/(2*m)  
     if n == 0:
@@ -140,16 +142,28 @@ def inductanceGaussLegendre(X0, Xf, Z0, Zf, n, m, nGaussLegendre):
 #
 
 def inductanceSimpson(X0, Xf, Z0, Zf, nX, nZ):
-  hX = (Xf - X0) / (2*nX)
-  hZ = (Zf - Z0) / (2*nZ)
-  X = np.linspace(X0, Xf, 2*nX+1)
-  Z = np.linspace(Z0, Zf, 2*nZ+1)
-  W = np.ones((2*nX+1, 2*nZ+1))
+    def simpsonAbscissaWeights(a, b, n):
+        h = (b-a)/n
+        x = np.linspace(a, b, n+1)
+        w = np.zeros_like(x)
+        w[0] = w[-1] = h/3
+        for i in range(1, n, 2):
+            w[i] = 4 * h / 3
+        for i in range(2, n, 2):
+            w[i] = 2*h/3
+        return x, w
+    if nX == 0:
+        X, Wx = simpsonAbscissaWeights(X0, Xf, 1) 
+    else:
+        X, Wx = simpsonAbscissaWeights(X0, Xf, 2*nX)
+    if nZ == 0:
+        Z, Wz = simpsonAbscissaWeights(Z0, Zf, 1)
+    else:
+        Z, Wz = simpsonAbscissaWeights(Z0, Zf, 2*nZ)
+    X, Z = np.meshgrid(X, Z)
+    W = np.outer(Wx, Wz)
 
-  W[1::2, :] *= 4
-  W[2:-1:2, :] *= 2 
-
-  return [X, Z, W]
+    return [X, Z, W]
 
 #
 # FONCTIONS A MODIFIER [end]
