@@ -163,7 +163,7 @@ def inductanceSimpson(X0, Xf, Z0, Zf, nX, nZ):
     X, Z = np.meshgrid(X, Z)
     W = np.outer(Wx, Wz)
 
-    return [X, Z, W]
+    return [X.flatten(), Z.flatten(), W.flatten()]
 
 #
 # FONCTIONS A MODIFIER [end]
@@ -174,8 +174,8 @@ def inductanceSimpson(X0, Xf, Z0, Zf, nX, nZ):
 #
 # Classe du projet P2
 #
-
-
+ 
+ 
 class MutualInductanceProject:
   mu0     = 4e-7*pi          # permeabilité du vide en [H/m] 
                         
@@ -200,10 +200,10 @@ class MutualInductanceProject:
     plt.plot(x,z+self.Hsecond,"o-b",linewidth=2)
     plt.xlim((-0.03,0.03)); plt.ylim((-0.03,0.03))
  
-
-
-
-
+ 
+ 
+ 
+ 
 def main():
   
 # ------------------------------------------------------------------------------------ 
@@ -214,9 +214,9 @@ def main():
 # -0- Initialisation du projet
 #
 # ------------------------------------------------------------------------------------
-
+ 
   p = MutualInductanceProject() 
-
+ 
 # ------------------------------------------------------------------------------------
 #
 # -1- Calcul de l'inductance, inductance mutuelle, inductance induite
@@ -227,12 +227,12 @@ def main():
   Zcoil = -linspace(0,p.Hcoil,p.nZcoil)
   Rcoil = p.Rcoil * ones_like(Zcoil)
   Icoil = p.I     * ones_like(Zcoil) * p.nSpires / p.nZcoil  
-
+ 
    
 # 
 # -1.1- Flux dans la bobine primaire du champs induit par la bobine primaire
 #
-
+ 
   nX = 10; nZ = 3; nGL = 2
   X,Z,W = inductanceGaussLegendre(0,p.Rcoil,0,-p.Hcoil/2,nX,nZ,nGL)
   Bz    = inductanceMegneticField(X,Z,Rcoil,Zcoil,Icoil,p)[1]
@@ -241,9 +241,9 @@ def main():
   print("Using Gauss-Legendre integration rule (nX = %d nZ = %d):-)" % (nX,nZ))  
   print("Flux across primary        = %14.7e [Tesla m2]" % flux)
   print("Inductance                 = %14.7e [Henry]" % L)
-
-
-
+ 
+ 
+ 
   nX = 10; nZ = 3
   X,Z,W = inductanceSimpson(0,p.Rcoil,0,-p.Hcoil/2,nX,nZ)
   Bz    = inductanceMegneticField(X,Z,Rcoil,Zcoil,Icoil,p)[1]
@@ -261,7 +261,7 @@ def main():
   print("Flux across primary        = %14.7e [Tesla m2]" % flux)
   print("Inductance                 = %14.7e [Henry]" % L)
   
-
+ 
 # 
 # -1.2- Flux dans la bobine secondaire du champs induit par la bobine primaire
 # 
@@ -273,14 +273,14 @@ def main():
   M     = p.nSpires * (flux/p.I)
   print("Flux across secondary      = %14.7e [Tesla m2]" % flux)
   print("Mutual inductance          = %14.7e [Henry]" % M)
-
-
+ 
+ 
 # ------------------------------------------------------------------------------------
 #
 # -2- Représentation du champ magnétique
 #
 # ------------------------------------------------------------------------------------
-
+ 
   plt.rcParams['toolbar'] = 'None'
    
   n = 20
@@ -297,11 +297,11 @@ def main():
 # -3- Bz dans la bobine et la plaque
 #
 # ------------------------------------------------------------------------------------
-
+ 
   plt.figure("Champ magnétique : Bz dans les bobines primaire et secondaire") 
   
   n = 100
-
+ 
   X = linspace(0,p.Rcoil,n) 
   Z = p.Zcoil * ones_like(X)
   Bz = inductanceMegneticField(X,Z,Rcoil,Zcoil,Icoil,p)[1]
@@ -312,9 +312,9 @@ def main():
   Z = (p.Zcoil + p.Hcoil/2) * ones_like(X)
   Bz = inductanceMegneticField(X,Z,Rcoil,Zcoil,Icoil,p)[1]
   plt.plot(X,Bz,'-b')
-
+ 
   
-
+ 
   X = linspace(0,p.Rcoil,n) 
   Z = p.Zcoil * ones_like(X) + p.Hsecond
   Bz = inductanceMegneticField(X,Z,Rcoil,Zcoil,Icoil,p)[1]
@@ -334,15 +334,15 @@ def main():
 # -4- Points d'intégration de Gauss-Legendre
 #
 # ------------------------------------------------------------------------------------
-
+ 
   
-
+ 
 #   plt.rcParams['toolbar'] = 'None'
 #   plt.rcParams['toolbar'] = 'None'
 #   plt.rcParams['figure.facecolor'] = 'lavender'
 #   plt.rcParams['axes.facecolor'] = 'lavender'
   plt.figure("Integration Gauss-Legendre nodes")
-
+ 
   nX = 5; nZ = 4; nGL = 3  
   X,Z,W = inductanceGaussLegendre(0,p.Rcoil,0,-p.Hcoil,nX,nZ,nGL) 
   plt.plot(X,Z,'ob',markersize=5)
@@ -359,7 +359,7 @@ def main():
   z = array([0.003,-p.Hcoil])
   x = repeat([linspace(0,p.Rcoil,nX+1)],2,axis=0)
   plt.plot(x,z,'--k')
-
+ 
   X,Z,W = inductanceGaussLegendre(0,p.Rcoil,0.002,0.002,nX,0,nGL)
   plt.plot(X,Z,'or',markersize=5)
   X,Z,W = inductanceGaussLegendre(-0.002,-0.002,0,-p.Hcoil,0,nZ,nGL)
@@ -367,7 +367,7 @@ def main():
   plt.axis('equal')
   plt.axis('off')
   
-
+ 
 # ------------------------------------------------------------------------------------
 #
 # -5- Points d'intégration de Simpson
@@ -375,8 +375,8 @@ def main():
 #     Mais, c'est dimanche.... et j'ai autre chose à faire :-)
 #
 # ------------------------------------------------------------------------------------
-
-
+ 
+ 
   
   plt.figure("Integration Simpson nodes")
   X,Z,W = inductanceSimpson(0,p.Rcoil,0,-p.Hcoil,nX,nZ) 
@@ -394,20 +394,20 @@ def main():
   z = array([0.003,-p.Hcoil])
   x = repeat([linspace(0,p.Rcoil,nX+1)],2,axis=0)
   plt.plot(x,z,'--k')
-
+ 
   X,Z,W = inductanceSimpson(0,p.Rcoil,0.002,0.002,nX,0)
   plt.plot(X,Z,'or',markersize=5)
   X,Z,W = inductanceSimpson(-0.002,-0.002,0,-p.Hcoil,0,nZ)
   plt.plot(X,Z,'or',markersize=5)
   plt.axis('equal')
   plt.axis('off')
-
+ 
 # ------------------------------------------------------------------------------------
 #
 # -6- La jolie courbe pour Claude Oestges et Nicolas Roisin
 #
 # ------------------------------------------------------------------------------------
-
+ 
   
   nD = 21
   nX = 5; nZ = 5; nGL = 3
@@ -427,15 +427,15 @@ def main():
   ax.set_ylabel("Inductance mutuelle : M [mH]")
   ax.set_xlabel("Distance bobines : d [cm]")
   ax.grid()
-
+ 
     
   
   plt.show()
   
   
-
+ 
   
-main()  
+main()    
 
 
 
