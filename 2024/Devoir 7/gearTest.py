@@ -22,21 +22,23 @@ from numpy import *
 #     Evidemment, c'est plus compliqué pour les autres ordres !
 #  
 
+def stabilityGear(x, y, order):
+  if (order > 6) :
+    return zeros(order+1),zeros(shape(x))
+  
+  coeff = array([
+  [1, 1],
+  [2/3, 4/3, -1/3],
+  [6/11, 18/11, -9/11, 2/11],
+  [12/25, 48/25, -36/25, 16/25, -3/25],
+  [60/137, 300/137, -300/137, 200/137, -75/137, 12/137],
+  [60/147, 360/147, -450/147, 400/147, -225/147, 72/147, -10/147]][order-1])
 
-def stabilityGear(x,y,order):
-
-# 
-# A COMPLETER / MODIFIER [begin]
-#
- 
   z = x + 1j*y
-  gain = abs(1/(1-z))
-  coeff = ones(2)
- 
-# 
-# A COMPLETER / MODIFIER [end]
-#
-
+  gain = zeros(shape(z))
+  for i in range(shape(z)[0]) :
+    for j in range(shape(z)[1]) :
+       gain[i,j] = max(abs(roots([(coeff[0]*z[i,j] -1),*coeff[1:]])))
   return gain,coeff
 
 #
