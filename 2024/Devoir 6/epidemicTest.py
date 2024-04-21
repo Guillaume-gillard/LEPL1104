@@ -23,7 +23,7 @@ from numpy import *
 # 
 #
 
-def f(u,beta,gamma):
+def f(u, beta, gamma):
   dSdt = - beta * u[0] * u[1]
   dIdt =   beta * u[0] * u[1] - gamma * u[1]
   dRdt =                        gamma * u[1]  
@@ -36,67 +36,48 @@ def f(u,beta,gamma):
 # 
   
 def epidemicEuler(Xstart,Xend,Ustart,n,beta,gamma):
-  X = linspace(Xstart,Xend,n+1)  
-  
-#
-# A MODIFIER ..... [begin]
-#
-  U = zeros((n+1,3))
-  U[:,0] = 10000
-  U[:,1] = 2800
-  U[:,2] = 7100
-  
-  
-#
-# A MODIFIER ..... [end]
-# 
+  X = linspace(Xstart, Xend, n+1)
+  h = (Xend - Xstart)/n
+  U = zeros((n+1, 3)) ; U[0,:] = Ustart
+  for i in range(n):
+    U[i+1,:] = U[i,:] + h*f(U[i,:], beta, gamma)
+  return X, U
 
-  return X,U
- 
 
 # -------------------------------------------------------------------------    
 #
-# -2- Schema de Taylor classique d'ordre 4
+# -3- Schema de Taylor classique d'ordre 4
 # 
   
 def epidemicTaylor(Xstart,Xend,Ustart,n,beta,gamma):
-  X = linspace(Xstart,Xend,n+1)
-  
-#
-# A MODIFIER ..... [begin]
-#
-  U = zeros((n+1,3))
-  U[:,0] = 10000
-  U[:,1] = 2800
-  U[:,2] = 7100
-  
-  
-#
-# A MODIFIER ..... [end]
-#
-
-  return X,U
+  X = linspace(Xstart, Xend, n+1)
+  h = (Xend - Xstart)/n
+  U = zeros((n+1, 3)) ; U[0,:] = Ustart
+  for i in range(n):
+    df = f(U[i,:], beta, gamma)
+    d2f = f(df, beta, gamma)
+    d3f = f(d2f, beta, gamma)
+    d4f = f(d3f, beta, gamma)
+    U[i+1,:] = U[i,:] + h*df + d2f*(h**2)/2 + d3f*(h**3)/6 + d4f*(h**4)/24
+  return X, U
 
 # -------------------------------------------------------------------------    
 #
-# -3- Schema de Runge-Kutta d'ordre 4
+# -4- Schema de Runge-Kutta d'ordre 4
 # 
   
 def epidemicRungeKutta(Xstart,Xend,Ustart,n,beta,gamma):
-  X = linspace(Xstart,Xend,n+1)
-  
-#
-# A MODIFIER ..... [begin]
-#
-  U = zeros((n+1,3))
-  U[:,0] = 10000
-  U[:,1] = 2800
-  U[:,2] = 7100
-    
-#
-# A MODIFIER ..... [end]
-# 
-  return X,U
+  X = linspace(Xstart, Xend, n+1) 
+  h = (Xend - Xstart)/n
+  U = zeros((n+1, 3)) 
+  U[0,:] = Ustart
+  for i in range(n):  
+    K1 = f(U[i,:]         , beta, gamma)
+    K2 = f(U[i,:] + K1*h/2, beta, gamma)
+    K3 = f(U[i,:] + K2*h/2, beta, gamma)
+    K4 = f(U[i,:] + K3*h  , beta, gamma)
+    U[i+1,:] = U[i,:] + h*(K1+2*K2+2*K3+K4)/6     
+  return X, U
 
 # -------------------------------------------------------------------------
 
@@ -162,7 +143,7 @@ def main():
   # -3- Comparons notre simulation avec des données réelles !
   #
   
-  Xstart = 0; Xend = 150;
+  Xstart = 0; Xend = 150
   m = 10; n = Xend * m
   
   #
@@ -220,7 +201,7 @@ def main():
   plt.rcParams['axes.facecolor'] = 'lavender'
   
   fig = plt.figure("SIR Equations")
-  X=X[::m]; U=U[::m,:];
+  X=X[::m]; U=U[::m,:]
   plt.plot(X,U[:,0],'-b',X,U[:,1],'-r',X,U[:,2],'-g')
   plt.plot(days[::5],dataConfirmed[::5],'or')
   plt.plot(days[::5],dataRecovered[::5],'og')
