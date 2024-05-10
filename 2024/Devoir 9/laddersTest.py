@@ -16,23 +16,57 @@ from scipy.linalg import norm,solve
 #
 #
 
+
+def f(geometry, var):
+  a, b, c = geometry
+  x, y = var
+  syst1 = [0, 0]
+  syst1[0] = (a *x)**2 - (c**2 + x**2)*(x + y)**2
+  syst1[1] = (b *y)**2 - (c**2 + y**2)*(x + y)**2
+  return syst1
+
+def dfdx(geometry, var):
+  a, b, c = geometry
+  x, y = var
+  dsystdx = [[0, 0], [0, 0]]
+  dsystdx[0][0] = a**2 * 2 * x - 2*(x+y)*(c**2 + x*(2*x + y))
+  dsystdx[0][1] = -2*(x+y)*(c**2 + x**2)
+  dsystdx[1][0] = -2*(x+y)*(c**2 + y**2)
+  dsystdx[1][1] =  2 * b**2 * y - 2*(x+y)*(c**2 + y*(2*y + x))
+  return dsystdx
+
 def laddersIterate(geometry,x):
-
-  return x
+  sol = solve(dfdx(geometry, x), f(geometry, x))
+  return x - sol 
     
-# ============================================================
-  
-def laddersSolve(geometry,tol,nmax):
-  a = geometry[0]
-  b = geometry[1]
-  c = geometry[2]
-  
-  x = [b-2.5*c,a-2.5*c]
-  
+def laddersSolve(geometry, tol, nmax) :
+  a, b, c = geometry
+  m = min(a, b)
+  if m/2 < c:
+    x = [(b-c)/2, (a-c)/2]
+  else:
+    sol = (m**2 / 4 - c**2) ** 1/2
+    x = [sol, sol]
+    
+    if geometry[0] == geometry[1] :
+      return x
+    else:
+      x[0] *= b**2/a**2
+      x[1] *= a**2/b**2
+    x[0] = min(x[0], m)
+    x[1] = min(x[1], m)
+    x[0] = (b-c)/2
+    x[1] = (a-c)/2
+  n = 0
+  delta = tol + 1
+  while delta > tol and n < nmax :
+    n +=1
+    xold = x
+    x = laddersIterate(geometry, x)
+    delta = norm(x-xold)
+  if x[0] <= tol or x[1] <= tol :
+    return [-1, -1] 
   return x
-
-
-
     
 #
 # FONCTIONS A MODIFIER [end]
